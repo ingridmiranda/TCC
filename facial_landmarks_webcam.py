@@ -17,6 +17,9 @@ predictor = dlib.shape_predictor("/home/ingrid/unb/tcc2/git/TCC/shape_predictor_
 # initialize webcam
 captura = cv2.VideoCapture(0)
 
+# initialize serial communication
+ser = serial.Serial('/dev/ttyACM1', 9600)
+
  
 while(captura.isOpened()):
 	ret, frame = captura.read()
@@ -37,15 +40,17 @@ while(captura.isOpened()):
 		cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 		dif_y = shape[0][1]-shape[16][1] # linha(68) coluna(2) negativo: esquerda - positivo: direita
 		dif_toty = shape[8][1]-shape[0][1]
-		rot_y = y/(x/dif_y); #para vetorizar
+		rot_y = y/(x/dif_y); # para vetorizar
 		print("x", x)
 		print(rot_y)
 		tam = len(shape)
 		tam2 = len(shape[0])
 		if (rot_y >= 10):
 			print("Virar para direita")
+			ser.write('2');
 		if (rot_y <= -10):
 			print("Virar para esquerda")
+			ser.write('1')
 		# show the face number
 		#cv2.putText(frame, "Face #{}".format(i + 1), (x - 10, y - 10),
 		#cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
