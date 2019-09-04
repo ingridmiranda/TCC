@@ -18,7 +18,7 @@ predictor = dlib.shape_predictor("/home/ingrid/unb/tcc2/git/TCC/shape_predictor_
 captura = cv2.VideoCapture(0)
 
 # initialize serial communication
-ser = serial.Serial('/dev/ttyACM1', 9600)
+ser = serial.Serial('/dev/ttyACM2', 9600)
 
  
 while(captura.isOpened()):
