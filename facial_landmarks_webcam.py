@@ -9,6 +9,7 @@ import imutils
 import dlib
 import cv2
 import serial
+import math
 
 
 detector = dlib.get_frontal_face_detector()
@@ -62,14 +63,42 @@ while(captura.isOpened()):
 
 		boca = []
 		boca.append(shape[67][1]-shape[61][1]) #pontos 68 e 62 (y)
+		boca.append(shape[67][0]-shape[61][0]) #pontos 68 e 62 (x)
 		boca.append(shape[66][1]-shape[62][1]) #pontos 67 e 63 (y)
+		boca.append(shape[66][0]-shape[62][0]) #pontos 67 e 63 (x)
 		boca.append(shape[65][1]-shape[63][1]) #pontos 66 e 64 (y)
+		boca.append(shape[65][0]-shape[63][0]) #pontos 66 e 64 (x)
+
+		boca.append(shape[54][0]-shape[48][0]) #pontos 55 e 49 (x)
+		boca.append(shape[54][0]-shape[48][0]) #pontos 55 e 49 (x)
+
 		boca.append(shape[48][0]-shape[3][0]) #pontos 49 e 4 (x)
 		boca.append(shape[59][0]-shape[4][0]) #pontos 60 e 5 (x)
 		boca.append(shape[49][0]-shape[2][0]) #pontos 50 e 3 (x)
 		boca.append(shape[13][0]-shape[54][0]) #pontos 14 e 55 (x)
 		boca.append(shape[12][0]-shape[55][0]) #pontos 13 e 56 (x)
 		boca.append(shape[14][0]-shape[53][0]) #pontos 15 e 54 (x)
+		#aberturaBoca = ((boca[0] ** 2) + (boca[1] ** 2) + (boca[3] ** 2) ** (1/2)) #implementando distancias euclidianas
+		#boca1 = aberturaBoca/boca[3]
+		#print("boca:", aberturaBoca, boca[3], boca1)
+		#if (boca1 > 10):
+		#	print("Boca aberta")
+		
+		aberturaBoca = []
+		aberturaBoca.append(math.sqrt((boca[0] ** 2) + (boca[1] ** 2)))
+		aberturaBoca.append(math.sqrt((boca[2] ** 2) + (boca[3] ** 2)))
+		aberturaBoca.append(math.sqrt((boca[4] ** 2) + (boca[5] ** 2)))
+		aberturaBoca.append((aberturaBoca[0] + aberturaBoca[1] + aberturaBoca[2])/3)
+
+		comprimentoBoca = []
+		comprimentoBoca.append(math.sqrt((boca[6] ** 2) + (boca[7] ** 2)))
+
+		bocaAberta = comprimentoBoca[0]/aberturaBoca[3]
+		print("abertura: ", bocaAberta)
+		if (bocaAberta < 10):
+    			print("Boca aberta!!")
+
+
 
 		rosto = []
 		rosto.append(shape[0][1]-shape[16][1]) #pontos 1 e 17 (y)
