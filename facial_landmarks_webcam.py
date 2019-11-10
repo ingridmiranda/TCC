@@ -10,6 +10,17 @@ import dlib
 import cv2
 import serial
 import math
+import Tkinter as Tk
+
+BocaAberta = False
+BocaComprimida = False
+Piscada = False
+CabecaInclinadaEsquerda = False
+CabecaInclinadaDireita = False
+EYE_AR_THRESH = 0.2
+EYE_AR_CONSEC_FRAMES = 3
+COUNTER = 0
+TOTAL = 0
 
 
 detector = dlib.get_frontal_face_detector()
@@ -28,15 +39,16 @@ while(captura.isOpened()):
 	gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY) 
 	rects = detector(gray,1)
 
+
 	for (i, rect) in enumerate(rects):
-# determine the facial landmarks for the face region, then
-# convert the facial landmark (x, y)-coordinates to a NumPy
-# array
+	# determine the facial landmarks for the face region, then
+	# convert the facial landmark (x, y)-coordinates to a NumPy
+	# array
 		shape = predictor(gray, rect)
 		shape = face_utils.shape_to_np(shape)
 
-# convert dlib's rectangle to a OpenCV-style bounding box
-# [i.e., (x, y, w, h)], then draw the face bounding box
+	# convert dlib's rectangle to a OpenCV-style bounding box
+	# [i.e., (x, y, w, h)], then draw the face bounding box
 		(x, y, w, h) = face_utils.rect_to_bb(rect)
 		cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
@@ -72,8 +84,11 @@ while(captura.isOpened()):
 
 		try:
 			olhoDireitoAberto = aberturaOlhoDireito[2]/(2*comprimentoOlhoDireito[0])
-			if (olhoDireitoAberto <= 0.2):
+			if (olhoDireitoAberto <= 0.18):
 				print("Blink olho direito")
+				Piscada = True
+			else:
+					Piscada = False
 
 
 		except ZeroDivisionError:
@@ -91,12 +106,35 @@ while(captura.isOpened()):
 
 		try:
 			olhoEsquerdoAberto = aberturaOlhoEsquerdo[2]/(2*comprimentoOlhoEsquerdo[0])
-			if (olhoEsquerdoAberto <= 0.2):
-    				print("Blink olho esquerdo")
+			if (olhoEsquerdoAberto <= 0.18):
+					print("Blink olho esquerdo")
+					Piscada = True
+			else: 
+				Piscada = False
 		except ZeroDivisionError:
 			olhoEsquerdoAberto = 0
+
+		if olhoEsquerdoAberto < EYE_AR_THRESH:
+				COUNTER += 1
 		
-		print("olhos", olhoDireitoAberto, olhoEsquerdoAberto)
+		else:
+				if COUNTER >= EYE_AR_CONSEC_FRAMES:
+						print("BLINK LEFT DETECTED")
+						TOTAL += 1
+						
+				COUNTER = 0
+		
+		if olhoDireitoAberto < EYE_AR_THRESH:
+				COUNTER += 1
+		
+		else:
+				if COUNTER >= EYE_AR_CONSEC_FRAMES:
+						print("BLINK RIGHT DETECTED")
+						TOTAL += 1
+						
+				COUNTER = 0
+		
+		#print("olhos", olhoDireitoAberto, olhoEsquerdoAberto)
 
 		#print(olhos)
 
@@ -152,10 +190,18 @@ while(captura.isOpened()):
 		except ZeroDivisionError:
 			bocaAberta = 0
 
-		print("abertura: ", bocaAberta)
-		if (bocaAberta < 8):
-    			print("Boca aberta!!")
+		if (bocaAberta < 7):
+				print("Boca aberta!!")
+				BocaAberta = True
+		else:
+				BocaAberta = False
 
+		if (bocaAberta > 60):
+				BocaComprimida = True
+				print("Boca comprimida!!")
+		else:
+				BocaComprimida = False
+		
 
 
 		rosto = []
@@ -181,26 +227,41 @@ while(captura.isOpened()):
 		except ZeroDivisionError:
 			rot2 = 0
 
-		print(rot2)
+		#print(rot2)
 		#print("x", x)
 		#print(rot_y)
 		tam = len(shape)
 		tam2 = len(shape[0])
 		if (rot2 >= 40):
-			print("Cabeca inclinada para direita")
+			#print("Cabeca inclinada para direita")
+			CabecaInclinadaDireita = True
 			#ser.write('2');
+		else:
+				CabecaInclinadaDireita = False
 		if (rot2 <= -40):
-			print("Cabeca inclinada para esquerda")
+			#print("Cabeca inclinada para esquerda")
+			CabecaInclinadaEsquerda = True
+		else:
+				CabecaInclinadaEsquerda = False
 			#ser.write('1')
 		# show the face number
 		#cv2.putText(frame, "Face #{}".format(i + 1), (x - 10, y - 10),
 		#cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-		if ((bocaAberta < 8) & (rot2 >= 40)):
-			print("VIRAR PARA DIREITA")
-		if ((bocaAberta < 8) & (rot2 <= -40)):
-			print("VIRAR PARA ESQUERDA")
-    
+
+	#	if ((bocaAberta < 8) & (rot2 >= 40)):
+	#		print("VIRAR PARA DIREITA")
+	#	if ((bocaAberta < 8) & (rot2 <= -40)):
+	#		print("VIRAR PARA ESQUERDA")
+
+		if (BocaAberta & CabecaInclinadaDireita):
+				print("VIRAR PARA DIREITA!!")
+		if (BocaAberta & CabecaInclinadaEsquerda):
+				print("VIRAR PARA ESQUERDA!!")
+		if (BocaComprimida & Piscada):
+				print("SEGUIR EM FRENTE")
+		if (BocaAberta & Piscada):
+				print("PARAR CADEIRA")
 
 		# loop over the (x, y)-coordinates for the facial landmarks
 		# and draw them on the image
@@ -216,7 +277,7 @@ while(captura.isOpened()):
 
 		if cv2.waitKey(1) & 0xFF == ord('q'):
 				break
- 
+	
 captura.release()
 cv2.destroyAllWindows()
 
