@@ -33,6 +33,8 @@ Piscada = 0
 olhoDireitoAberto = 0
 
 
+
+
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor("/home/ingrid/unb/tcc2/git/TCC/shape_predictor_68_face_landmarks.dat")
 
@@ -45,49 +47,68 @@ cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
 ## Boca Aberta True
 def callbackBATrue():
-    Label (root, image=photoGreen, bg="white") .grid(row=3, column=2, sticky=W+E+S+N) 
+    Label (root, image=photoGreen, bg="#d7f1ef") .grid(row=3, column=2, sticky=W+E+S+N) 
  
 ## Boca Aberta False
 def callbackBAFalse():
-    Label (root, image=photoRed, bg="white") .grid(row=3, column=2, sticky=W+E+S+N) 
+    Label (root, image=photoRed, bg="#d7f1ef") .grid(row=3, column=2, sticky=W+E+S+N) 
 
 ## Boca Comprimida False
 def callbackBCFalse():
-    Label (root, image=photoRed, bg="white") .grid(row=4, column=2, sticky=W+E+S+N)
+    Label (root, image=photoRed, bg="#d7f1ef") .grid(row=4, column=2, sticky=W+E+S+N)
 
 ## Boca Comprimida True
 def callbackBCTrue():
-    Label (root, image=photoGreen, bg="white") .grid(row=4, column=2, sticky=W+E+S+N)
+    Label (root, image=photoGreen, bg="#d7f1ef") .grid(row=4, column=2, sticky=W+E+S+N)
 ## Cabeça Inclinada para Esquerda False
 def callbackCIEFalse():
-    Label (root, image=photoRed, bg="white") .grid(row=5, column=2, sticky=W+E+S+N)
+    Label (root, image=photoRed, bg="#d7f1ef") .grid(row=5, column=2, sticky=W+E+S+N)
 
 ## Cabeça Inclinada para Esquerda True
 def callbackCIETrue():
-    Label (root, image=photoGreen, bg="white") .grid(row=5, column=2, sticky=W+E+S+N) 
+    Label (root, image=photoGreen, bg="#d7f1ef") .grid(row=5, column=2, sticky=W+E+S+N) 
 
 ## Cabeça Inclinada para Direita False
 def callbackCIDFalse():
-    Label (root, image=photoRed, bg="white") .grid(row=6, column=2, sticky=W+E+S+N)
+    Label (root, image=photoRed, bg="#d7f1ef") .grid(row=6, column=2, sticky=W+E+S+N)
 
 ## Cabeça Inclinada para Direita True
 def callbackCIDTrue():
-    Label (root, image=photoGreen, bg="white") .grid(row=6, column=2, sticky=W+E+S+N) 
+    Label (root, image=photoGreen, bg="#d7f1ef") .grid(row=6, column=2, sticky=W+E+S+N) 
 
 ## Piscada False      
 def callbackPFalse():
-    Label (root, image=photoRed, bg="white") .grid(row=7, column=2, sticky=W+E+S+N)
+    Label (root, image=photoRed, bg="#d7f1ef") .grid(row=7, column=2, sticky=W+E+S+N)
 
-##Piscada True
+## Piscada True
 def callbackPTrue():
-    Label (root, image=photoGreen, bg="white") .grid(row=7, column=2, sticky=W+E+S+N) 
+    Label (root, image=photoGreen, bg="#d7f1ef") .grid(row=7, column=2, sticky=W+E+S+N) 
 
+## Virar cadeira para direita
+def callbackVD():
+    Label (root, image=photoCadeiraDireita,  bg="white") .grid(row = 8, column = 0, sticky=W+E+S+N)
+
+## Virar cadeira para Esquerda
+def callbackVE():
+    Label (root, image=photoCadeiraEsquerda, bg="white") .grid(row = 8, column = 0, sticky=W+E+S+N)
+
+## Seguir com cadeira para frente
+def callbackSF():
+    Label (root, image=photoCadeiraFrente,  bg="white") .grid(row = 8, column = 0, sticky=W+E+S+N)
+
+## Parar a cadeira
+def callbackPC():
+    Label (root, image=photoCadeiraStop,  bg="white") .grid(row = 8, column = 0, sticky=W+E+S+N)
+
+def callbackST():
+    Label (root, image=photoCadeiraTras,  bg="white") .grid(row = 8, column = 0, sticky=W+E+S+N)
 
 def show_vid():                                        #creating a function
     global bocaAberta
     global Piscada
     global shape
     global olhoDireitoAberto
+    global status
 
     if not cap.isOpened():                             #checks for the opening of camera
         print("cant open the camera")
@@ -146,12 +167,12 @@ def show_vid():                                        #creating a function
 
 		try:
 			olhoDireitoAberto = aberturaOlhoDireito[2]/(2*comprimentoOlhoDireito[0])
-			if (olhoDireitoAberto <= 0.18):
+			if (olhoDireitoAberto <= 0.2):
 				print("Blink olho direito")
 				Piscada = True
+
 			else:
 					Piscada = False
-
 
 		except ZeroDivisionError:
 			olhoDireitoAberto = 0
@@ -167,42 +188,51 @@ def show_vid():                                        #creating a function
 
 		try:
 			olhoEsquerdoAberto = aberturaOlhoEsquerdo[2]/(2*comprimentoOlhoEsquerdo[0])
-			if (olhoEsquerdoAberto <= 0.18):
+			if (olhoEsquerdoAberto <= 0.2):
 					print("Blink olho esquerdo")
 					Piscada = True
+
 			else: 
 				Piscada = False
+
 		except ZeroDivisionError:
 			olhoEsquerdoAberto = 0
 
-		if olhoEsquerdoAberto < EYE_AR_THRESH:
-				print("BLINK LEFT DETECTED")
+        if (Piscada == TRUE):
                 callbackPTrue()
-        else:
-            callbackPFalse()
+        if (Piscada == FALSE):
+                callbackPFalse()
+
+
+		#if olhoEsquerdoAberto < EYE_AR_THRESH:
+		#		print("BLINK LEFT DETECTED")
+        #        callbackPTrue()
+        #else:
+        #    callbackPFalse()
 		
-        if olhoDireitoAberto < EYE_AR_THRESH:
-            print("BLINK RIGHT DETECTED")
-            callbackPTrue()
-        else:
-            callbackPFalse()
+    #    if olhoDireitoAberto < EYE_AR_THRESH:
+       #     print("BLINK RIGHT DETECTED")
+        #    callbackPTrue()
+        #else:
+         #   callbackPFalse()
+        
         
 		
 		#print("olhos", olhoDireitoAberto, olhoEsquerdoAberto)
 
 		#print(olhos)
 
-        sobrancelha = []
-        sobrancelha.append(shape[36][1]-shape[17][1]) #pontos 37 e 18 (y)
-        sobrancelha.append(shape[37][1]-shape[18][1]) #pontos 38 e 19 (y)
-        sobrancelha.append(shape[37][1]-shape[19][1]) #pontos 38 e 20 (y)
-        sobrancelha.append(shape[38][1]-shape[20][1]) #pontos 39 e 21 (y)
-        sobrancelha.append(shape[38][1]-shape[21][1]) #pontos 39 e 22 (y)
-        sobrancelha.append(shape[45][1]-shape[26][1]) #pontos 46 e 27 (y)
-        sobrancelha.append(shape[44][1]-shape[25][1]) #pontos 45 e 26 (y)
-        sobrancelha.append(shape[44][1]-shape[24][1]) #pontos 45 e 25 (y)
-        sobrancelha.append(shape[43][1]-shape[23][1]) #pontos 44 e 24 (y)
-        sobrancelha.append(shape[43][1]-shape[22][1]) #pontos 44 e 23 (y)
+    #    sobrancelha = []
+    #    sobrancelha.append(shape[36][1]-shape[17][1]) #pontos 37 e 18 (y)
+    #    sobrancelha.append(shape[37][1]-shape[18][1]) #pontos 38 e 19 (y)
+    #    sobrancelha.append(shape[37][1]-shape[19][1]) #pontos 38 e 20 (y)
+    #    sobrancelha.append(shape[38][1]-shape[20][1]) #pontos 39 e 21 (y)
+    #    sobrancelha.append(shape[38][1]-shape[21][1]) #pontos 39 e 22 (y)
+    #    sobrancelha.append(shape[45][1]-shape[26][1]) #pontos 46 e 27 (y)
+    #    sobrancelha.append(shape[44][1]-shape[25][1]) #pontos 45 e 26 (y)
+    #    sobrancelha.append(shape[44][1]-shape[24][1]) #pontos 45 e 25 (y)
+    #    sobrancelha.append(shape[43][1]-shape[23][1]) #pontos 44 e 24 (y)
+    #    sobrancelha.append(shape[43][1]-shape[22][1]) #pontos 44 e 23 (y)
 
         boca = []
         # nivel de abertura de boca
@@ -248,26 +278,30 @@ def show_vid():                                        #creating a function
         BocaAberta = False
         BocaComprimida = False
 
-        if (bocaAberta < 7):
+        print(bocaAberta)
+
+        if (bocaAberta < 6):
                 print("Boca aberta!!")
                 BocaAberta = True
                 callbackBATrue()
                 callbackBCFalse()
 
 
-        if ((bocaAberta > 7) & (bocaAberta < 60)):
+        if ((bocaAberta > 7) & (bocaAberta < 40)):
             BocaAberta = False
             callbackBAFalse()
+            callbackBCFalse()
 
             
-        if (bocaAberta > 60):
+        if (bocaAberta > 40):
                 BocaComprimida = True
                 print("Boca comprimida!!")
                 callbackBCTrue()
+                callbackBAFalse;
                
-        else:
-            BocaComprimida = False
-            callbackBCFalse()
+        #else:
+         #   BocaComprimida = False
+          #  callbackBCFalse()
         
 		
         rosto = []
@@ -298,21 +332,26 @@ def show_vid():                                        #creating a function
         #print(rot_y)
         tam = len(shape)
         tam2 = len(shape[0])
-        if (rot2 >= 40):
+        
+        if (rot2 <= -40):
             #print("Cabeca inclinada para direita")
-            CabecaInclinadaDireita = True
-            callbackCIDTrue()
-            #ser.write('2');
+                CabecaInclinadaDireita = True
+                callbackCIDTrue()
+                callbackCIEFalse()
+                #ser.write('2');
         else:
                 CabecaInclinadaDireita = False
-                callbackCIDFalse()
-        if (rot2 <= -40):
+                callbackCIDFalse()    
+
+        if (rot2 >= 40):
             #print("Cabeca inclinada para esquerda")
-            CabecaInclinadaEsquerda = True
-            callbackCIETrue()
+                CabecaInclinadaEsquerda = True
+                callbackCIETrue()
+                callbackCIDFalse()
         else:
                 CabecaInclinadaEsquerda = False
                 callbackCIEFalse()
+                
 			#ser.write('1')
 		# show the face number
 		#cv2.putText(frame, "Face #{}".format(i + 1), (x - 10, y - 10),
@@ -323,15 +362,33 @@ def show_vid():                                        #creating a function
 	#		print("VIRAR PARA DIREITA")
 	#	if ((bocaAberta < 8) & (rot2 <= -40)):
 	#		print("VIRAR PARA ESQUERDA")
+        status = "Nenhum comando detectado!"
 
-		if (BocaAberta & CabecaInclinadaDireita):
-				print("VIRAR PARA DIREITA!!")
-		if (BocaAberta & CabecaInclinadaEsquerda):
-				print("VIRAR PARA ESQUERDA!!")
-		if (BocaComprimida & Piscada):
-				print("SEGUIR EM FRENTE")
-		if (BocaAberta & Piscada):
-				print("PARAR CADEIRA")
+        if (BocaAberta & CabecaInclinadaDireita):
+                print("VIRAR PARA DIREITA!!")
+                status = "Virar para direita"
+                callbackVD()
+
+        if (BocaAberta & CabecaInclinadaEsquerda):
+                print("VIRAR PARA ESQUERDA!!")
+                status = "Virar para esquerda"
+                callbackVE()
+
+        if (BocaComprimida & Piscada):
+                print("SEGUIR EM FRENTE")
+                status = "Seguir em frente"
+                callbackSF()
+
+        if (BocaAberta & Piscada):
+                print("IR PARA TRÁS")
+                status = "Ir para trás"
+                callbackST()
+        
+        #else:
+        #        print("PARAR CADEIRA")
+        #        status = "Parar cadeira"
+        #        callbackPC()
+        
 
     pic = cv2.cvtColor(last_frame, cv2.COLOR_BGR2RGB)     #we can change the display color of the frame gray,black&white here
     img = Image.fromarray(pic)
@@ -342,49 +399,52 @@ def show_vid():                                        #creating a function
 
 if __name__ == '__main__':
     root=tk.Tk()                            #assigning root variable for Tkinter as tk
-    root.config(background = "white")
-    lmain = tk.Label(master=root)
-    lmain.grid(row=9, column=0, columnspan=3, sticky=W+E+N+S)
+    root.config(background = "#d7f1ef")
+    lmain = tk.Label(master=root, bg="white")
+    lmain.grid(row=8, column=1, rowspan=1, columnspan=2, sticky=W+E+N+S)
     root.title("Sistema de reconhecimento de expressões faciais")            #you can give any title
-    photoCapa = PhotoImage(file="capa.png")
-    photoCapa = photoCapa.zoom(2,1)
-    Label (root, image=photoCapa, bg="white").grid(row=0, column=0, columnspan=3, sticky=W+E+N+S)
 
-    Label (root, text=" ", bg="white", fg="black", font="none 12 bold") .grid(row=1, column=0, sticky=W+E)
-
-    Label (root, text="Descrição", bg="white", fg="black", font="none 12 bold") .grid(row=2, column=0, sticky=W)
-    Label (root, text="Abrir amplamente a boca", bg="white", fg="black", font="none 12 ") .grid(row=3, column=0, sticky=W)
-    Label (root, text="Sugar os lábios", bg="white", fg="black", font="none 12 ") .grid(row=4, column=0, sticky=W)
-    Label (root, text="Piscar", bg="white", fg="black", font="none 12 ") .grid(row=7, column=0, sticky=W)
-    Label (root, text="Inclinar cabeça para esquerda", bg="white", fg="black", font="none 12 ") .grid(row=5, column=0, sticky=W)
-    Label (root, text="Inclinar cabeça para direita", bg="white", fg="black", font="none 12 ") .grid(row=6, column=0, sticky=W)
-
-    Label (root, text="AU", bg="white", fg="black", font="none 12 bold") .grid(row=2, column=1, sticky=W)
-    Label (root, text="27", bg="white", fg="black", font="none 12 ") .grid(row=3, column=1, sticky=W)
-    Label (root, text="28", bg="white", fg="black", font="none 12 ") .grid(row=4, column=1, sticky=W)
-    Label (root, text="45", bg="white", fg="black", font="none 12 ") .grid(row=5, column=1, sticky=W)
-    Label (root, text="55", bg="white", fg="black", font="none 12 ") .grid(row=6, column=1, sticky=W)
-    Label (root, text="56", bg="white", fg="black", font="none 12 ") .grid(row=7, column=1, sticky=W)
-
-
+    ### Image Declarations ###
     photoGreen = PhotoImage(file="green.png")
-    photoGreen = photoGreen.subsample(8,8)
+    photoGreen = photoGreen.subsample(6,6)
     photoRed = PhotoImage(file="red.png")
-    photoRed = photoRed.subsample(8,8)
-    Label (root, text="Status", bg="white", fg="black", font="none 12 bold") .grid(row=2, column=2, sticky=W+E+S+N)
+    photoRed = photoRed.subsample(6,6)
+    photoCadeiraDireita = PhotoImage(file="CadeiraDireita.png")
+    photoCadeiraEsquerda = PhotoImage(file="CadeiraEsquerda.png")
+    photoCadeiraFrente = PhotoImage(file="CadeiraFrente.png")
+    photoCadeiraStop = PhotoImage(file="CadeiraStop.png")
+    photoCadeiraTras = PhotoImage(file="CadeiraRe.png")
+    photoCapa = PhotoImage(file="capaIG2.png")
+    photoCapa = photoCapa.zoom(1,1)
+
+    Label (root, image=photoCapa, bg="#d7f1ef").grid(row=0, column=0, columnspan = 3, sticky=W+E)
+
+    Label (root, text="DESCRIÇÃO", bg="#d7f1ef", fg="black", font="helvetica 16 bold") .grid(row=2, column=0, columnspan=1, sticky=W)
+    Label (root, text="Abrir amplamente a boca", bg="#d7f1ef", fg="black", font="helvetica 16 ") .grid(row=3, column=0, columnspan=1, sticky=W)
+    Label (root, text="Sugar os lábios", bg="#d7f1ef", fg="black", font="helvetica 16 ") .grid(row=4, column=0, columnspan=1, sticky=W)
+    Label (root, text="Piscar", bg="#d7f1ef", fg="black", font="helvetica 16 ") .grid(row=7, column=0, columnspan=1, sticky=W)
+    Label (root, text="Inclinar cabeça para esquerda", bg="#d7f1ef", fg="black", font="helvetica 16 ") .grid(row=5, column=0, columnspan=1, sticky=W)
+    Label (root, text="Inclinar cabeça para direita", bg="#d7f1ef", fg="black", font="helvetica 16 ") .grid(row=6, column=0, columnspan=1, sticky=W)
+
+    Label (root, text="AU", bg="#d7f1ef", fg="black", font="helvetica 16 bold") .grid(row=2, column=1, columnspan=1, sticky=W)
+    Label (root, text="27", bg="#d7f1ef", fg="black", font="helvetica 16 ") .grid(row=3, column=1, columnspan=1, sticky=W)
+    Label (root, text="28", bg="#d7f1ef", fg="black", font="helvetica 16 ") .grid(row=4, column=1, columnspan=1, sticky=W)
+    Label (root, text="45", bg="#d7f1ef", fg="black", font="helvetica 16 ") .grid(row=5, column=1, columnspan=1, sticky=W)
+    Label (root, text="55", bg="#d7f1ef", fg="black", font="helvetica 16 ") .grid(row=6, column=1, columnspan=1, sticky=W)
+    Label (root, text="56", bg="#d7f1ef", fg="black", font="helvetica 16 ") .grid(row=7, column=1, columnspan=1, sticky=W)
+
+    Label (root, text="STATUS", bg="#d7f1ef", fg="black", font="helvetica 16 bold") .grid(row=2, column=2, columnspan=1, sticky=W+E+S+N)
     
 
-    Label (root, text="  ", bg="white", fg="black", font="none 12 ") .grid(row=8, column=0, columnspan=3, sticky=W)
+    Label (root, image=photoCadeiraStop, bg="white").grid(row=8, column=0, columnspan=1, sticky=W+E+N+S)
 
-    while(1):
+    while(TRUE):
         show_vid()
-
-        #if (BocaAberta == True):
-        #        Label (root, image=photoGreen, bg="white") .grid(row=3, column=2, sticky=W+E+S+N) 
-        #if (BocaAberta == False):
-        #        Label (root, image=photoRed, bg="white") .grid(row=3, column=2, sticky=W+E+S+N)
-        
-
 
         root.update_idletasks()
         #root.mainloop()                                  #keeps the application in an infinite loop so it works continuosly
+
+    Label (root, textvariable=status, bg="#d7f1ef", fg="black", font="helvetica 16 ") .grid(column=0, columnspan=3, sticky=W)
+    Label (root, text="", bg="white", fg="black", font="helvetica 16 ") .grid(row=10, column=0, columnspan=3, sticky=W)
+
+
