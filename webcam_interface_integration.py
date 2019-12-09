@@ -33,7 +33,8 @@ Piscada = 0
 olhoDireitoAberto = 0
 
 
-
+# initialize serial communication
+ser = serial.Serial('/dev/ttyACM0', 9600)
 
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor("/home/ingrid/unb/tcc2/git/TCC/shape_predictor_68_face_landmarks.dat")
@@ -87,14 +88,17 @@ def callbackPTrue():
 ## Virar cadeira para direita
 def callbackVD():
     Label (root, image=photoCadeiraDireita,  bg="white") .grid(row = 8, column = 0, sticky=W+E+S+N)
+    ser.write('1')
 
 ## Virar cadeira para Esquerda
 def callbackVE():
     Label (root, image=photoCadeiraEsquerda, bg="white") .grid(row = 8, column = 0, sticky=W+E+S+N)
+    ser.write('2')
 
 ## Seguir com cadeira para frente
 def callbackSF():
     Label (root, image=photoCadeiraFrente,  bg="white") .grid(row = 8, column = 0, sticky=W+E+S+N)
+    ser.write('3')
 
 ## Parar a cadeira
 def callbackPC():
@@ -102,6 +106,7 @@ def callbackPC():
 
 def callbackST():
     Label (root, image=photoCadeiraTras,  bg="white") .grid(row = 8, column = 0, sticky=W+E+S+N)
+    ser.write('4')
 
 def show_vid():                                        #creating a function
     global bocaAberta
@@ -287,7 +292,7 @@ def show_vid():                                        #creating a function
                 callbackBCFalse()
 
 
-        if ((bocaAberta > 7) & (bocaAberta < 40)):
+        if ((bocaAberta > 6) & (bocaAberta < 40)):
             BocaAberta = False
             callbackBAFalse()
             callbackBCFalse()
@@ -297,7 +302,7 @@ def show_vid():                                        #creating a function
                 BocaComprimida = True
                 print("Boca comprimida!!")
                 callbackBCTrue()
-                callbackBAFalse;
+                callbackBAFalse()
                
         #else:
          #   BocaComprimida = False
@@ -318,7 +323,7 @@ def show_vid():                                        #creating a function
         dif_y = shape[0][1]-shape[16][1] # linha(68) coluna(2) negativo: esquerda - positivo: direita
         dif_tot1 = shape[8][1]-shape[0][1] 
         dif_tot2 = shape[8][1]-shape[16][1]
-        dif_med = (dif_tot1+dif_tot2)/2
+        dif_med = (dif_tot1+dif_tot2)/2 ### tirar esse dividido por 2
 
 		#rot_y = y/(x/dif_y); # para vetorizar
 		#print(rot_y)
@@ -338,7 +343,7 @@ def show_vid():                                        #creating a function
                 CabecaInclinadaDireita = True
                 callbackCIDTrue()
                 callbackCIEFalse()
-                #ser.write('2');
+                #ser.write('2')
         else:
                 CabecaInclinadaDireita = False
                 callbackCIDFalse()    
@@ -348,6 +353,7 @@ def show_vid():                                        #creating a function
                 CabecaInclinadaEsquerda = True
                 callbackCIETrue()
                 callbackCIDFalse()
+                #ser.write('1')
         else:
                 CabecaInclinadaEsquerda = False
                 callbackCIEFalse()
@@ -368,21 +374,31 @@ def show_vid():                                        #creating a function
                 print("VIRAR PARA DIREITA!!")
                 status = "Virar para direita"
                 callbackVD()
+                #ser.write('1')
 
-        if (BocaAberta & CabecaInclinadaEsquerda):
-                print("VIRAR PARA ESQUERDA!!")
-                status = "Virar para esquerda"
-                callbackVE()
-
-        if (BocaComprimida & Piscada):
-                print("SEGUIR EM FRENTE")
-                status = "Seguir em frente"
-                callbackSF()
-
-        if (BocaAberta & Piscada):
-                print("IR PARA TRÁS")
-                status = "Ir para trás"
-                callbackST()
+        else:
+            if (BocaAberta & CabecaInclinadaEsquerda):
+                    print("VIRAR PARA ESQUERDA!!")
+                    status = "Virar para esquerda"
+                    callbackVE()
+                    #ser.write('2')
+            else:    
+                if (BocaComprimida & Piscada):
+                        print("SEGUIR EM FRENTE")
+                        status = "Seguir em frente"
+                        callbackSF()
+                        #ser.write('3')
+                
+                else:
+                    if (BocaAberta & Piscada):
+                            print("IR PARA TRÁS")
+                            status = "Ir para trás"
+                            callbackST()
+                            #ser.write('4')
+                    
+                    else:
+                        if (not(BocaAberta & CabecaInclinadaDireita) and not(BocaAberta & CabecaInclinadaEsquerda) and not(BocaComprimida & Piscada) and not(BocaAberta & Piscada)):
+                                callbackPC()
         
         #else:
         #        print("PARAR CADEIRA")
@@ -398,11 +414,11 @@ def show_vid():                                        #creating a function
     lmain.after(1, show_vid)
 
 if __name__ == '__main__':
-    root=tk.Tk()                            #assigning root variable for Tkinter as tk
+    root=tk.Tk() #assigning root variable for Tkinter as tk
     root.config(background = "#d7f1ef")
     lmain = tk.Label(master=root, bg="white")
     lmain.grid(row=8, column=1, rowspan=1, columnspan=2, sticky=W+E+N+S)
-    root.title("Sistema de reconhecimento de expressões faciais")            #you can give any title
+    root.title("Sistema de reconhecimento de expressões faciais")           
 
     ### Image Declarations ###
     photoGreen = PhotoImage(file="green.png")
@@ -434,15 +450,12 @@ if __name__ == '__main__':
     Label (root, text="56", bg="#d7f1ef", fg="black", font="helvetica 16 ") .grid(row=7, column=1, columnspan=1, sticky=W)
 
     Label (root, text="STATUS", bg="#d7f1ef", fg="black", font="helvetica 16 bold") .grid(row=2, column=2, columnspan=1, sticky=W+E+S+N)
-    
-
     Label (root, image=photoCadeiraStop, bg="white").grid(row=8, column=0, columnspan=1, sticky=W+E+N+S)
 
     while(TRUE):
         show_vid()
 
         root.update_idletasks()
-        #root.mainloop()                                  #keeps the application in an infinite loop so it works continuosly
 
     Label (root, textvariable=status, bg="#d7f1ef", fg="black", font="helvetica 16 ") .grid(column=0, columnspan=3, sticky=W)
     Label (root, text="", bg="white", fg="black", font="helvetica 16 ") .grid(row=10, column=0, columnspan=3, sticky=W)

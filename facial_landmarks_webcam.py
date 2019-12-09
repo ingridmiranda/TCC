@@ -30,7 +30,7 @@ predictor = dlib.shape_predictor("/home/ingrid/unb/tcc2/git/TCC/shape_predictor_
 captura = cv2.VideoCapture(0)
 
 # initialize serial communication
-#ser = serial.Serial('/dev/ttyACM0', 9600)
+ser = serial.Serial('/dev/ttyACM0', 9600)
 
  
 while(captura.isOpened()):
@@ -84,7 +84,7 @@ while(captura.isOpened()):
 
 		try:
 			olhoDireitoAberto = aberturaOlhoDireito[2]/(2*comprimentoOlhoDireito[0])
-			if (olhoDireitoAberto <= 0.18):
+			if (olhoDireitoAberto <= 0.2):
 				print("Blink olho direito")
 				Piscada = True
 			else:
@@ -106,33 +106,15 @@ while(captura.isOpened()):
 
 		try:
 			olhoEsquerdoAberto = aberturaOlhoEsquerdo[2]/(2*comprimentoOlhoEsquerdo[0])
-			if (olhoEsquerdoAberto <= 0.18):
+			if (olhoEsquerdoAberto <= 0.2):
 					print("Blink olho esquerdo")
 					Piscada = True
 			else: 
 				Piscada = False
+
 		except ZeroDivisionError:
 			olhoEsquerdoAberto = 0
 
-		if olhoEsquerdoAberto < EYE_AR_THRESH:
-				COUNTER += 1
-		
-		else:
-				if COUNTER >= EYE_AR_CONSEC_FRAMES:
-						print("BLINK LEFT DETECTED")
-						TOTAL += 1
-						
-				COUNTER = 0
-		
-		if olhoDireitoAberto < EYE_AR_THRESH:
-				COUNTER += 1
-		
-		else:
-				if COUNTER >= EYE_AR_CONSEC_FRAMES:
-						print("BLINK RIGHT DETECTED")
-						TOTAL += 1
-						
-				COUNTER = 0
 		
 		#print("olhos", olhoDireitoAberto, olhoEsquerdoAberto)
 
@@ -190,17 +172,22 @@ while(captura.isOpened()):
 		except ZeroDivisionError:
 			bocaAberta = 0
 
-		if (bocaAberta < 7):
+		if (bocaAberta < 6):
 				print("Boca aberta!!")
 				BocaAberta = True
-		else:
-				BocaAberta = False
-
-		if (bocaAberta > 60):
-				BocaComprimida = True
-				print("Boca comprimida!!")
-		else:
 				BocaComprimida = False
+		#else:
+		#		BocaAberta = False
+
+		if ((bocaAberta > 6) & (bocaAberta < 40)):
+    			BocaAberta = False
+
+		if (bocaAberta > 40):
+				BocaComprimida = True
+				BocaAberta = False
+				print("Boca comprimida!!")
+		#else:
+		#		BocaComprimida = False
 		
 
 
@@ -256,13 +243,20 @@ while(captura.isOpened()):
 
 		if (BocaAberta & CabecaInclinadaDireita):
 				print("VIRAR PARA DIREITA!!")
-		if (BocaAberta & CabecaInclinadaEsquerda):
-				print("VIRAR PARA ESQUERDA!!")
-		if (BocaComprimida & Piscada):
-				print("SEGUIR EM FRENTE")
-		if (BocaAberta & Piscada):
-				print("PARAR CADEIRA")
-
+				ser.write('1')
+		
+		else:
+			if (BocaAberta & CabecaInclinadaEsquerda):
+					print("VIRAR PARA ESQUERDA!!")
+					ser.write('2')
+			else:
+				if (BocaComprimida & Piscada):
+						print("SEGUIR EM FRENTE")
+						ser.write('3')
+				else:
+					if (BocaAberta & Piscada):
+							print("IR PARA TRAS")
+							ser.write('4')
 		# loop over the (x, y)-coordinates for the facial landmarks
 		# and draw them on the image
 		for (x, y) in shape:
@@ -280,6 +274,4 @@ while(captura.isOpened()):
 	
 captura.release()
 cv2.destroyAllWindows()
-
-
 
